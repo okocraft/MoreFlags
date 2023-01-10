@@ -2,6 +2,7 @@ package net.okocraft.moreflags;
 
 import net.okocraft.moreflags.listener.BeaconEffectListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
+import net.okocraft.moreflags.listener.RaidListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
 import net.okocraft.moreflags.protocollib.ProtocolLibHook;
@@ -24,6 +25,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new DeathMessageListener(this), this);
         pm.registerEvents(new VehicleMoveListener(this), this);
         pm.registerEvents(new WorldGuardInternalListener(), this);
+        pm.registerEvents(new RaidListener(this), this);
 
         if (!protocolLibHook.registerHandlers()) {
             getLogger().info("ProtocolLib is not installed. death-message flag will have some side effects...");

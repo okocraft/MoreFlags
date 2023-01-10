@@ -30,6 +30,8 @@ public final class CustomFlags {
 
     public static final StateFlag VEHICLE_ENTRY = registerFlag(createStateFlag("vehicle-entry", true, RegionGroup.ALL, true));
 
+    public static final StateFlag RAID = registerFlag(createStateFlag("raid", true));
+
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();

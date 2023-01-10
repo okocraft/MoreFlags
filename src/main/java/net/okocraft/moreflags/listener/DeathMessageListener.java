@@ -5,7 +5,6 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,11 +48,6 @@ public class DeathMessageListener implements Listener {
         }
 
         LocalPlayer dead = WorldGuardPlugin.inst().wrapPlayer(event.getPlayer());
-        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(dead.getWorld());
-        if (rm == null) {
-            return;
-        }
-
         Set<Player> players = new HashSet<>(plugin.getServer().getOnlinePlayers());
 
         if (!FlagUtil.testState(dead, CustomFlags.SEND_DEATH_MESSAGE)) {

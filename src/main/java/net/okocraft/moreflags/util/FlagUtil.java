@@ -21,6 +21,7 @@ package net.okocraft.moreflags.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
@@ -42,7 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.bukkit.entity.Player;
 
 public final class FlagUtil {
@@ -58,6 +59,17 @@ public final class FlagUtil {
         return WorldGuard.getInstance().getPlatform().getRegionContainer()
                 .createQuery().getApplicableRegions(player.getLocation())
                 .testState(player, flag);
+    }
+
+    public static <T> T queryValue(org.bukkit.World world, org.bukkit.Location pos, @Nullable RegionAssociable subject, Flag<T> flag) {
+        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .get(BukkitAdapter.adapt(world));
+        if (rm == null) {
+            return null;
+        }
+
+        return rm.getApplicableRegions(BlockVector3.at(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ()))
+                .queryValue(subject, flag);
     }
 
     public static boolean contains(Player player, Collection<ProtectedRegion> regions) {

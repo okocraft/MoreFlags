@@ -36,14 +36,6 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
         this.plugin = plugin;
     }
 
-    private static BlockVector3 getLocation(Entity player) {
-        return BlockVector3.at(
-                player.getLocation().getBlockX(),
-                player.getLocation().getBlockY(),
-                player.getLocation().getBlockZ()
-        );
-    }
-
     @EventHandler
     private void onWorldChange(PlayerChangedWorldEvent event) {
         locationHistory.remove(event.getPlayer().getUniqueId());
@@ -59,7 +51,7 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
     @EventHandler(ignoreCancelled = true)
     private void onMoveEvent(VehicleMoveEvent event) {
         BlockVector3 from = locationHistory.get(event.getVehicle().getUniqueId());
-        BlockVector3 to = getLocation(event.getVehicle());
+        BlockVector3 to = BukkitAdapter.adapt(event.getVehicle().getLocation()).toVector().toBlockPoint();
         if (from == null || !from.equals(to)) {
             locationHistory.put(event.getVehicle().getUniqueId(), to);
             onPlayerChangeBlockPoint(event, from, to);
