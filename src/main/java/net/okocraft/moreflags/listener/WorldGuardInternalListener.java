@@ -44,12 +44,14 @@ public class WorldGuardInternalListener extends AbstractWorldGuardInternalListen
         }
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onDamageEntity(DamageEntityEvent event) {
         if (event.getResult() == Event.Result.ALLOW) return; // Don't care about events that have been pre-allowed
         if (!isRegionSupportEnabled(event.getWorld())) return; // Region support disabled
         if (isWhitelisted(event.getCause(), event.getWorld(), false)) return;
         if (event.getEntity() instanceof Player) return;
+        if (event.getEntity().getCustomName() == null) return;
         if (event.getCause().getRootCause() instanceof Player cause) {
             LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(cause);
             if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
