@@ -40,6 +40,9 @@ public class ClientboundPacketListener extends PacketAdapter {
     }
 
     private void onSystemChatPacket(Player client, String content, boolean overlay, PacketEvent event) {
+        if (content == null) {
+            return;
+        }
         LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(client);
         if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
             return;
