@@ -11,7 +11,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 
-    private final ProtocolLibHook protocolLibHook = new ProtocolLibHook(this);
+    private ProtocolLibHook protocolLibHook = null;
+
+    public Main() {
+        try {
+            this.protocolLibHook = new ProtocolLibHook(this);
+            getLogger().info("Using ProtocolLib.");
+        } catch (NoClassDefFoundError ignored) {
+        }
+    }
 
     @Override
     public void onLoad() {
@@ -26,20 +34,19 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new VehicleMoveListener(this), this);
         pm.registerEvents(new WorldGuardInternalListener(), this);
         pm.registerEvents(new RaidListener(this), this);
-
-        if (!protocolLibHook.registerHandlers()) {
-            getLogger().info("ProtocolLib is not installed. death-message flag will have some side effects...");
+        if (protocolLibHook != null) {
+            protocolLibHook.registerHandlers();
         }
     }
 
     @Override
     public void onDisable() {
-        if (protocolLibHook.hasProtocolLib()) {
+        if (protocolLibHook != null) {
             protocolLibHook.unregisterHandlers();
         }
     }
 
-    public ProtocolLibHook getProtocolLibHook() {
-        return this.protocolLibHook;
+    public boolean hasProtocolLib() {
+        return this.protocolLibHook != null;
     }
 }

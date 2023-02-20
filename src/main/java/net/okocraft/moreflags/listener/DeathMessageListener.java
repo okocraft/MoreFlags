@@ -118,7 +118,7 @@ public class DeathMessageListener implements Listener {
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void filterMessageOnPlayerDeath(PlayerDeathEvent event) {
-        if (plugin.getProtocolLibHook().hasProtocolLib() || event.getDeathMessage() == null) {
+        if (plugin.hasProtocolLib() || event.getDeathMessage() == null) {
             return;
         }
 
