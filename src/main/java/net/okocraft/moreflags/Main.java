@@ -2,6 +2,7 @@ package net.okocraft.moreflags;
 
 import net.okocraft.moreflags.listener.BeaconEffectListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
+import net.okocraft.moreflags.listener.EggSpawnChickListener;
 import net.okocraft.moreflags.listener.RaidListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
@@ -34,6 +35,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new VehicleMoveListener(this), this);
         pm.registerEvents(new WorldGuardInternalListener(), this);
         pm.registerEvents(new RaidListener(this), this);
+        pm.registerEvents(new EggSpawnChickListener(), this);
         if (protocolLibHook != null) {
             protocolLibHook.registerHandlers();
         }

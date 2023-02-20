@@ -179,20 +179,23 @@ class AbstractWorldGuardInternalListener implements Listener {
 
         if (rootCause instanceof Player) {
             Player player = (Player) rootCause;
+            tellErrorMessage(player, location, what);
+        }
+    }
 
-            long now = System.currentTimeMillis();
-            Long lastTime = WGMetadata.getIfPresent(player, DENY_MESSAGE_KEY, Long.class);
-            if (lastTime == null || now - lastTime >= LAST_MESSAGE_DELAY) {
-                RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-                LocalPlayer localPlayer = getPlugin().wrapPlayer(player);
-                Component message = (Component) query.queryValue(
-                        BukkitAdapter.adapt(location),
-                        localPlayer,
-                        Flags.fuzzyMatchFlag(WorldGuard.getInstance().getFlagRegistry(), "deny-message-component")
-                );
-                formatAndSendDenyMessage(what, localPlayer, message);
-                WGMetadata.put(player, DENY_MESSAGE_KEY, now);
-            }
+    public static void tellErrorMessage(Player player, Location location, TranslatableComponent what) {
+        long now = System.currentTimeMillis();
+        Long lastTime = WGMetadata.getIfPresent(player, DENY_MESSAGE_KEY, Long.class);
+        if (lastTime == null || now - lastTime >= LAST_MESSAGE_DELAY) {
+            RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+            LocalPlayer localPlayer = getPlugin().wrapPlayer(player);
+            Component message = (Component) query.queryValue(
+                    BukkitAdapter.adapt(location),
+                    localPlayer,
+                    Flags.fuzzyMatchFlag(WorldGuard.getInstance().getFlagRegistry(), "deny-message-component")
+            );
+            formatAndSendDenyMessage(what, localPlayer, message);
+            WGMetadata.put(player, DENY_MESSAGE_KEY, now);
         }
     }
 
