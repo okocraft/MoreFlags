@@ -34,6 +34,8 @@ public final class CustomFlags {
 
     public static final StateFlag EGG_SPAWN_CHICK = registerFlag(createStateFlag("egg-spawn-chick", true));
 
+    public static final StateFlag SIGN_EDIT = registerFlag(createStateFlag("sign-edit", false));
+
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
