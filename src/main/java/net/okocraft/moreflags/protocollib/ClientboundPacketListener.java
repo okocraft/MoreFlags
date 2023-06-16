@@ -5,15 +5,11 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.MinecraftKey;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import java.util.Map;
 import java.util.Set;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.okocraft.moreflags.Main;
-import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.RaidListener;
 import org.bukkit.entity.Player;
 
@@ -55,20 +51,16 @@ public class ClientboundPacketListener extends PacketAdapter {
     }
 
     private void onSystemChatPacket(Player client, String content, boolean overlay, PacketEvent event) {
-        if (content == null) {
-            return;
-        }
-
-        if (!(GsonComponentSerializer.gson().deserialize(content) instanceof TranslatableComponent translatable)) {
-            return;
-        }
-
-        if (translatable.key().startsWith("death.") && client.hasMetadata(DeathMessageListener.METADATA_KEY)) {
-            LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(client);
-            if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
-                event.setCancelled(true);
+        TranslatableComponent translatable;
+        if (content != null && GsonComponentSerializer.gson().deserialize(content) instanceof TranslatableComponent t) {
+            translatable = t;
+        } else {
+            Object adventureContent = event.getPacket().getStructures().read(0).getHandle();
+            if (adventureContent instanceof TranslatableComponent t) {
+                translatable = t;
+            } else {
+                return;
             }
-            return;
         }
 
         if (translatable.key().equals("chat.type.advancement.challenge")
@@ -81,7 +73,6 @@ public class ClientboundPacketListener extends PacketAdapter {
                 && client.hasMetadata(RaidListener.CANCEL_HERO_META_KEY)) {
             event.setCancelled(true);
         }
-
     }
 
     private void onUpdateAdvancements(Player client, boolean reset, Map<MinecraftKey, Object> added, Set<MinecraftKey> removed, Map<MinecraftKey, Object> progress, PacketEvent event) {

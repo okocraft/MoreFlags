@@ -8,6 +8,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.okocraft.moreflags.CustomFlags;
@@ -35,7 +36,11 @@ public class DeathMessageListener implements Listener {
 
     public DeathMessageListener(Main plugin) {
         this.plugin = plugin;
-        this.noSeeMeta = new FixedMetadataValue(plugin, null);
+        this.noSeeMeta = new FixedMetadataValue(
+                Optional.ofNullable(plugin.getServer().getPluginManager()
+                        .getPlugin("ToggleDeathMessage")).orElse(plugin),
+                null
+        );
     }
 
     @SuppressWarnings("deprecation")
@@ -51,7 +56,12 @@ public class DeathMessageListener implements Listener {
         Set<Player> players = new HashSet<>(plugin.getServer().getOnlinePlayers());
 
         if (!FlagUtil.testState(dead, CustomFlags.SEND_DEATH_MESSAGE)) {
-            players.forEach(p -> p.setMetadata(METADATA_KEY, noSeeMeta));
+            players.forEach(p -> {
+                LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
+                if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
+                    p.setMetadata(METADATA_KEY, noSeeMeta);
+                }
+            });
             return;
         }
 
@@ -102,6 +112,16 @@ public class DeathMessageListener implements Listener {
             });
         }
 
+        for (Player p : plugin.getServer().getOnlinePlayers()) {
+            if (players.contains(p) || !p.hasMetadata(METADATA_KEY)) {
+                continue;
+            }
+
+            LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
+            if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
+                p.removeMetadata(METADATA_KEY, plugin);
+            }
+        }
     }
 
     /**
@@ -118,17 +138,18 @@ public class DeathMessageListener implements Listener {
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void filterMessageOnPlayerDeath(PlayerDeathEvent event) {
-        if (plugin.hasProtocolLib() || event.getDeathMessage() == null) {
+        if (plugin.getServer().getPluginManager().getPlugin("ToggleDeathMessage") != null) {
+            return;
+        }
+
+        if (event.getDeathMessage() == null) {
             return;
         }
 
         Set<Player> onlinePlayers = new HashSet<>(plugin.getServer().getOnlinePlayers());
-        onlinePlayers.removeIf(p -> {
-            LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-            return !WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())
-                    && p.hasMetadata(METADATA_KEY);
-        });
+        onlinePlayers.removeIf(p -> p.hasMetadata(METADATA_KEY));
         if (onlinePlayers.isEmpty()) {
+            event.setDeathSound(null);
             return;
         }
 
@@ -137,8 +158,6 @@ public class DeathMessageListener implements Listener {
         if (team != null) {
             Team.OptionStatus deathMessageOption = team.getOption(Team.Option.DEATH_MESSAGE_VISIBILITY);
             switch (deathMessageOption) {
-                case ALWAYS:
-                    break;
                 case FOR_OTHER_TEAMS:
                     // Hide for other teams or victim
                     onlinePlayers.removeIf(onlinePlayer -> onlinePlayer.equals(player)
@@ -148,8 +167,9 @@ public class DeathMessageListener implements Listener {
                     // Hide for own team
                     onlinePlayers.removeIf(onlinePlayer -> !team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
                     break;
+                case ALWAYS:
                 default:
-                    return;
+                    break;
             }
         }
 
@@ -183,6 +203,10 @@ public class DeathMessageListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     private void onPlayerStatisticIncrement(PlayerStatisticIncrementEvent event) {
+        if (plugin.getServer().getPluginManager().getPlugin("ToggleDeathMessage") != null) {
+            return;
+        }
+
         if (event.getStatistic() == Statistic.DEATHS) {
             plugin.getServer().getOnlinePlayers().forEach(p -> p.removeMetadata(METADATA_KEY, plugin));
         }
