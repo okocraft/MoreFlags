@@ -10,15 +10,15 @@ import com.sk89q.worldguard.protection.RegionResultSet;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import net.okocraft.moreflags.CustomFlags;
-import net.okocraft.moreflags.Main;
-import org.bukkit.entity.Entity;
+import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -27,14 +27,8 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 
 public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
 
-    private final Map<UUID, BlockVector3> locationHistory = new HashMap<>();
-    private final Map<UUID, Set<ProtectedRegion>> toRegionsHistory = new HashMap<>();
-
-    private final Main plugin;
-
-    public VehicleMoveListener(Main plugin) {
-        this.plugin = plugin;
-    }
+    private final Map<UUID, BlockVector3> locationHistory = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<ProtectedRegion>> toRegionsHistory = new ConcurrentHashMap<>();
 
     @EventHandler
     private void onWorldChange(PlayerChangedWorldEvent event) {
@@ -54,12 +48,13 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
         BlockVector3 to = BukkitAdapter.adapt(event.getVehicle().getLocation()).toVector().toBlockPoint();
         if (from == null || !from.equals(to)) {
             locationHistory.put(event.getVehicle().getUniqueId(), to);
-            onPlayerChangeBlockPoint(event, from, to);
+            onPlayerChangeBlockPoint(event, to);
         }
     }
 
-    private void onPlayerChangeBlockPoint(VehicleMoveEvent event, BlockVector3 from, BlockVector3 to) {
-        if (event.getVehicle().getPassengers().isEmpty() || !(event.getVehicle().getPassengers().get(0) instanceof Player player)) {
+    private void onPlayerChangeBlockPoint(VehicleMoveEvent event, BlockVector3 to) {
+        var passengers = event.getVehicle().getPassengers();
+        if (passengers.isEmpty() || !(passengers.get(0) instanceof Player player)) {
             return;
         }
         LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(player);
@@ -88,17 +83,57 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
 
         RegionResultSet rrs = new RegionResultSet(toRegions, rm.getRegion("__global__"));
         StateFlag.State state = rrs.queryState(WorldGuardPlugin.inst().wrapPlayer(player), CustomFlags.VEHICLE_ENTRY);
-        if (state != StateFlag.State.ALLOW) {
-            List<Entity> passengers = event.getVehicle().getPassengers();
 
-            passengers.forEach(event.getVehicle()::removePassenger);
-            event.getVehicle().teleport(event.getFrom());
-
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                event.getVehicle().teleport(event.getFrom().clone().subtract(event.getTo().clone().subtract(event.getFrom())));
-                passengers.forEach(event.getVehicle()::addPassenger);
-            }, 3L);
+        if (state == StateFlag.State.ALLOW) {
+            return;
         }
 
+        List<UUID> passengerUuids;
+
+        if (passengers.size() == 1) {
+            passengerUuids = List.of(player.getUniqueId());
+            event.getVehicle().removePassenger(player);
+        } else {
+            passengerUuids = new ArrayList<>(passengers.size());
+            for (var passenger : passengers) {
+                passengerUuids.add(passenger.getUniqueId());
+                event.getVehicle().removePassenger(passenger);
+            }
+        }
+
+        var fromLoc = event.getFrom().clone();
+        var toLoc = event.getTo().clone();
+
+        if (PlatformHelper.isFolia()) {
+            // In Folia, Entity#teleport throws UnsupportedOperationException
+            event.getVehicle().teleportAsync(fromLoc);
+        } else {
+            event.getVehicle().teleport(fromLoc);
+        }
+
+        PlatformHelper.runEntityTask(
+                event.getVehicle(),
+                vehicle -> {
+                    var teleportTo = fromLoc.multiply(2).subtract(toLoc);
+
+                    if (PlatformHelper.isFolia()) {
+                        // In Folia, the returning CompletableFuture can be calling #join. In Paper, this may cause the deadlock.
+                        vehicle.teleportAsync(teleportTo).join();
+                    } else {
+                        vehicle.teleport(teleportTo);
+                    }
+
+                    for (var passengerUuid : passengerUuids) {
+                        var passenger = vehicle.getWorld().getEntity(passengerUuid);
+                        // The passenger is gone or no longer in the same region of the vehicle.
+                        if (passenger == null || !passenger.isValid() || !PlatformHelper.isOwnedByCurrentRegion(passenger)) {
+                            continue;
+                        }
+
+                        vehicle.addPassenger(passenger);
+                    }
+                },
+                player.getPing() / 25L + 1 // ping * 2 / 50 + 1 ticks
+        );
     }
 }

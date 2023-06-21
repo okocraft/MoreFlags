@@ -1,13 +1,12 @@
 package net.okocraft.moreflags.util;
 
+import java.util.function.Consumer;
 import net.okocraft.moreflags.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Consumer;
 
 public final class PlatformHelper {
 
@@ -43,21 +42,15 @@ public final class PlatformHelper {
     }
 
     public static <E extends Entity> void runEntityTask(@NotNull E entity, @NotNull Consumer<E> task, long delay) {
-        var runnable = toRunnable(entity, task);
-
         if (ENTITY_SCHEDULER) {
-            entity.getScheduler().runDelayed(plugin(), $ -> runnable.run(), null, delay);
+            entity.getScheduler().runDelayed(plugin(), $ -> task.accept(entity), null, delay);
         } else {
-            Bukkit.getScheduler().runTaskLater(plugin(), runnable, delay);
+            Bukkit.getScheduler().runTaskLater(plugin(), () -> task.accept(entity), delay);
         }
     }
 
-    private static <E extends Entity> @NotNull Runnable toRunnable(@NotNull E entity, @NotNull Consumer<E> task) {
-        return () -> {
-            if (entity.isValid()) {
-                task.accept(entity);
-            }
-        };
+    public static boolean isOwnedByCurrentRegion(@NotNull Entity entity) {
+        return FOLIA ? Bukkit.isOwnedByCurrentRegion(entity) : Bukkit.isPrimaryThread();
     }
 
     private static @NotNull Plugin plugin() {

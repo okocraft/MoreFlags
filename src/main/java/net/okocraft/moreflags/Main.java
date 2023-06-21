@@ -33,7 +33,7 @@ public class Main extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new BeaconEffectListener(), this);
         pm.registerEvents(new DeathMessageListener(this), this);
-        pm.registerEvents(new VehicleMoveListener(this), this);
+        pm.registerEvents(new VehicleMoveListener(), this);
         pm.registerEvents(new WorldGuardInternalListener(), this);
         pm.registerEvents(new RaidListener(this), this);
         pm.registerEvents(new EggSpawnChickListener(), this);
