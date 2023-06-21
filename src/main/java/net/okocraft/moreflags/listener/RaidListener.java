@@ -16,6 +16,7 @@ import java.util.UUID;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.util.FlagUtil;
+import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Raid;
@@ -110,18 +111,24 @@ public class RaidListener implements Listener {
         event.getPlayer().setMetadata(CANCEL_HERO_META_KEY, cancelHeroMeta);
         event.setCancelled(true);
 
-        AdvancementProgress ap = event.getPlayer().getAdvancementProgress(heroOfTheVillage);
-        Set<String> current = new HashSet<>(ap.getAwardedCriteria());
+        Set<String> current = Set.copyOf(event.getPlayer().getAdvancementProgress(heroOfTheVillage).getAwardedCriteria());
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Set<String> awarded = new HashSet<>(ap.getAwardedCriteria());
-            if (!awarded.equals(current)) {
-                awarded.removeAll(current);
-                awarded.forEach(ap::revokeCriteria);
-                plugin.getServer().getConsoleSender().sendMessage("The completion of challenge has been cancelled.");
-            }
-            event.getPlayer().removeMetadata(CANCEL_HERO_META_KEY, plugin);
-        });
+        PlatformHelper.runEntityTask(
+                event.getPlayer(),
+                player -> {
+                    AdvancementProgress ap = player.getAdvancementProgress(heroOfTheVillage);
+                    Set<String> awarded = new HashSet<>(ap.getAwardedCriteria());
+
+                    if (!awarded.equals(current)) {
+                        awarded.removeAll(current);
+                        awarded.forEach(ap::revokeCriteria);
+                        plugin.getLogger().info("The completion of challenge has been cancelled.");
+                    }
+
+                    player.removeMetadata(CANCEL_HERO_META_KEY, plugin);
+                },
+                1L
+        );
     }
 
     @Nullable
