@@ -1,13 +1,25 @@
 package net.okocraft.moreflags;
 
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.flags.EnumFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.RegionGroup;
+import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
+import java.util.Optional;
+import org.bukkit.Material;
 
 public final class CustomFlags {
+
+    private static EnumFlag<Material> MATERIAL = new EnumFlag<>("material", Material.class) {
+        @Override
+        public Material unmarshal(Object o) {
+            return Optional.ofNullable(Material.matchMaterial(String.valueOf(o)))
+                    .orElseThrow(() -> new IllegalArgumentException("specified material name is not compatible"));
+        }
+    };
 
     private CustomFlags() {
     }
@@ -35,6 +47,10 @@ public final class CustomFlags {
     public static final StateFlag EGG_SPAWN_CHICK = registerFlag(createStateFlag("egg-spawn-chick", true));
 
     public static final StateFlag SIGN_EDIT = registerFlag(createStateFlag("sign-edit", false));
+
+    public static final SetFlag<Material> BREAKABLE_BLOCKS = registerFlag(createMaterialsFlag("breakable-blocks"));
+
+    public static final SetFlag<Material> PLACEABLE_BLOCKS = registerFlag(createMaterialsFlag("placeable-blocks"));
 
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {
@@ -76,5 +92,9 @@ public final class CustomFlags {
         } else {
             return new StateFlag(name, def, group);
         }
+    }
+
+    private static SetFlag<Material> createMaterialsFlag(String name) {
+        return new SetFlag<>(name, MATERIAL);
     }
 }
