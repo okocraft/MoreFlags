@@ -3,11 +3,13 @@ package net.okocraft.moreflags;
 import net.okocraft.moreflags.listener.BeaconEffectListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.EggSpawnChickListener;
+import net.okocraft.moreflags.listener.EnderPearlListener;
 import net.okocraft.moreflags.listener.RaidListener;
 import net.okocraft.moreflags.listener.SignEditListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
 import net.okocraft.moreflags.protocollib.ProtocolLibHook;
+import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -38,6 +40,11 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new RaidListener(this), this);
         pm.registerEvents(new EggSpawnChickListener(), this);
         pm.registerEvents(new SignEditListener(), this);
+
+        if (PlatformHelper.isFolia()) {
+            pm.registerEvents(new EnderPearlListener(), this);
+        }
+
         if (protocolLibHook != null) {
             protocolLibHook.registerHandlers();
         }
