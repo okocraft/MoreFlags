@@ -1,6 +1,7 @@
 package net.okocraft.moreflags;
 
 import net.okocraft.moreflags.listener.BeaconEffectListener;
+import net.okocraft.moreflags.listener.BlockListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.EggSpawnChickListener;
 import net.okocraft.moreflags.listener.EnderPearlListener;
@@ -40,6 +41,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new RaidListener(this), this);
         pm.registerEvents(new EggSpawnChickListener(), this);
         pm.registerEvents(new SignEditListener(), this);
+        pm.registerEvents(new BlockListener(), this);
 
         if (PlatformHelper.isFolia()) {
             pm.registerEvents(new EnderPearlListener(), this);
