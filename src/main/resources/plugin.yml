@@ -4,3 +4,4 @@ main: net.okocraft.moreflags.Main
 api-version: 1.19
 depend: ["WorldGuard"]
 softdepend: ["ProtocolLib", "ToggleDeathMessage"]
+folia-supported: true
