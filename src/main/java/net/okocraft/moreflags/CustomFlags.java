@@ -1,8 +1,11 @@
 package net.okocraft.moreflags;
 
+import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.RegionGroup;
+import com.sk89q.worldguard.protection.flags.RegistryFlag;
+import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
@@ -35,6 +38,10 @@ public final class CustomFlags {
     public static final StateFlag EGG_SPAWN_CHICK = registerFlag(createStateFlag("egg-spawn-chick", true));
 
     public static final StateFlag SIGN_EDIT = registerFlag(createStateFlag("sign-edit", false));
+
+    public static final SetFlag<BlockType> BREAKABLE_BLOCKS = registerFlag(new SetFlag<>("breakable-blocks", new RegistryFlag<>(null, BlockType.REGISTRY)));
+
+    public static final SetFlag<BlockType> PLACEABLE_BLOCKS = registerFlag(new SetFlag<>("placeable-blocks", new RegistryFlag<>(null, BlockType.REGISTRY)));
 
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {

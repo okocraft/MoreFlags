@@ -2,10 +2,16 @@ package net.okocraft.moreflags.listener;
 
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.event.DelegateEvent;
 import com.sk89q.worldguard.bukkit.event.block.PlaceBlockEvent;
+import com.sk89q.worldguard.bukkit.event.block.UseBlockEvent;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import io.papermc.paper.event.player.PlayerOpenSignEvent;
+import java.util.List;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.util.FlagUtil;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,38 +37,64 @@ public class SignEditListener extends AbstractWorldGuardInternalListener {
             return;
         }
 
-        var player = signChangeEvent.getPlayer();
+        processEvent(
+                signChangeEvent.getPlayer(), signChangeEvent.getBlock(),
+                event, event.getBlocks(),
+                "worldguard.error.denied.what.place-that-block"
+        );
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onOpenLow(@NotNull UseBlockEvent event) {
+        if (!(event.getOriginalEvent() instanceof PlayerOpenSignEvent openSignEvent) ||
+                !getConfig().get(openSignEvent.getSign().getBlock().getWorld().getName()).useRegions) {
+            return;
+        }
+
+        event.setSilent(true); // To prevent sending message from RegionProtectionListener
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onOpenHigh(@NotNull UseBlockEvent event) {
+        if (!(event.getOriginalEvent() instanceof PlayerOpenSignEvent openSignEvent) ||
+                !getConfig().get(openSignEvent.getSign().getBlock().getWorld().getName()).useRegions) {
+            return;
+        }
+
+        processEvent(
+                openSignEvent.getPlayer(), openSignEvent.getSign().getBlock(),
+                event, event.getBlocks(),
+                "worldguard.error.denied.what.open-that"
+        );
+    }
+
+    private void processEvent(@NotNull Player player, @NotNull Block block,
+                              @NotNull DelegateEvent weEvent, @NotNull List<Block> eventBlocks,
+                              @NotNull String denyMessageKey) {
         var localPlayer = getPlugin().wrapPlayer(player);
 
         if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(localPlayer, localPlayer.getWorld())) {
             return;
         }
 
-        var block = signChangeEvent.getBlock();
+        var state = FlagUtil.queryValue(block.getWorld(), block.getLocation(), getPlugin().wrapPlayer(player), CustomFlags.SIGN_EDIT);
 
-        var state = FlagUtil.queryValue(
-                block.getWorld(),
-                block.getLocation(),
-                getPlugin().wrapPlayer(player),
-                CustomFlags.SIGN_EDIT
-        );
-
-        if (event.getResult() == Event.Result.DENY && state == StateFlag.State.ALLOW) {
+        if (weEvent.getResult() == Event.Result.DENY && state == StateFlag.State.ALLOW) {
             // Other flags cancel sign editing, but the sign-edit flag allows it.
-            event.setResult(Event.Result.ALLOW);
-            event.getBlocks().add(block); // Re-add the sign block
-        } else if (event.getResult() != Event.Result.DENY && state == StateFlag.State.DENY) {
+            weEvent.setResult(Event.Result.ALLOW);
+            eventBlocks.add(block); // Re-add the sign block
+        } else if (weEvent.getResult() != Event.Result.DENY && state == StateFlag.State.DENY) {
             // Other flags allow sign editing, but the sign-edit flag disallows it.
-            event.setResult(Event.Result.DENY);
-            event.getBlocks().remove(block); // Remove the sign block
+            weEvent.setResult(Event.Result.DENY);
+            eventBlocks.remove(block); // Remove the sign block
         } /* else {
           // The sign-edit flag is not set, so we follow other flags such as "build" flag.
         } */
 
-        event.setSilent(false);
+        weEvent.setSilent(false);
 
-        if (event.getResult() == Event.Result.DENY) {
-            tellErrorMessage(player, block.getLocation(), TranslatableComponent.of("worldguard.error.denied.what.place-that-block"));
+        if (weEvent.getResult() == Event.Result.DENY) {
+            tellErrorMessage(player, block.getLocation(), TranslatableComponent.of(denyMessageKey));
         }
     }
 }
