@@ -149,14 +149,15 @@ public class RaidListener implements Listener {
         } else {
             Player causePlayer = plugin.getServer().getPlayer(causePlayerId);
 
-            if (causePlayer == null) {
-                return false;
-            }
+            if (causePlayer != null) {
+                subject = WorldGuardPlugin.inst().wrapPlayer(causePlayer);
+                World weWorld = BukkitAdapter.adapt(raidPos.getWorld());
 
-            subject = WorldGuardPlugin.inst().wrapPlayer(causePlayer);
-            World weWorld = BukkitAdapter.adapt(raidPos.getWorld());
-            if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(subject, weWorld)) {
-                return true;
+                if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(subject, weWorld)) {
+                    return true;
+                }
+            } else {
+                subject = null;
             }
         }
 
