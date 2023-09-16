@@ -147,7 +147,13 @@ public class RaidListener implements Listener {
         if (causePlayerId == null) {
             subject = null;
         } else {
-            subject = WorldGuardPlugin.inst().wrapPlayer(plugin.getServer().getPlayer(causePlayerId));
+            Player causePlayer = plugin.getServer().getPlayer(causePlayerId);
+
+            if (causePlayer == null) {
+                return false;
+            }
+
+            subject = WorldGuardPlugin.inst().wrapPlayer(causePlayer);
             World weWorld = BukkitAdapter.adapt(raidPos.getWorld());
             if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(subject, weWorld)) {
                 return true;
