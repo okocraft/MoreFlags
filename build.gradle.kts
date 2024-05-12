@@ -29,3 +29,9 @@ tasks.processResources {
         expand("projectVersion" to version)
     }
 }
+
+tasks.jar {
+    manifest {
+        attributes("paperweight-mappings-namespace" to "mojang")
+    }
+}
