@@ -72,6 +72,17 @@ public final class FlagUtil {
                 .queryValue(subject, flag);
     }
 
+    public static <T> T queryValueForPlayer(com.sk89q.worldguard.LocalPlayer player, Flag<T> flag) {
+        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(player.getWorld());
+        if (rm == null) {
+            return null;
+        }
+
+        var loc = player.getLocation();
+        var vec = BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        return rm.getApplicableRegions(vec).queryValue(player, flag);
+    }
+
     public static boolean contains(Player player, Collection<ProtectedRegion> regions) {
         BlockVector3 pos = WorldGuardPlugin.inst().wrapPlayer(player).getLocation().toVector().toBlockPoint();
         return regions.stream().anyMatch(r -> r.contains(pos));

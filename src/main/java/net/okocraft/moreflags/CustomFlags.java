@@ -1,12 +1,14 @@
 package net.okocraft.moreflags;
 
 import com.sk89q.worldedit.world.block.BlockType;
+import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.RegionGroup;
 import com.sk89q.worldguard.protection.flags.RegistryFlag;
 import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 
@@ -42,6 +44,17 @@ public final class CustomFlags {
     public static final SetFlag<BlockType> BREAKABLE_BLOCKS = registerFlag(new SetFlag<>("breakable-blocks", new RegistryFlag<>(null, BlockType.REGISTRY)));
 
     public static final SetFlag<BlockType> PLACEABLE_BLOCKS = registerFlag(new SetFlag<>("placeable-blocks", new RegistryFlag<>(null, BlockType.REGISTRY)));
+
+    public static final SetFlag<ItemType> ARMOR_BLACKLIST_HEAD = registerFlag(new SetFlag<>("armor-blacklist-head", new RegistryFlag<>(null, ItemType.REGISTRY)));
+    public static final SetFlag<ItemType> ARMOR_BLACKLIST_CHEST = registerFlag(new SetFlag<>("armor-blacklist-chest", new RegistryFlag<>(null, ItemType.REGISTRY)));
+    public static final SetFlag<ItemType> ARMOR_BLACKLIST_LEGS = registerFlag(new SetFlag<>("armor-blacklist-legs", new RegistryFlag<>(null, ItemType.REGISTRY)));
+    public static final SetFlag<ItemType> ARMOR_BLACKLIST_FEET = registerFlag(new SetFlag<>("armor-blacklist-feet", new RegistryFlag<>(null, ItemType.REGISTRY)));
+
+    public static final StringFlag MESSAGE_ON_ARMOR_DENIED = registerFlag(new StringFlag("message-on-armor-denied", ""));
+    public static final StringFlag TELEPORT_ON_ARMOR_DENIED = registerFlag(new StringFlag("teleport-on-armor-denied", ""));
+
+    @Deprecated
+    public static final StringFlag PREVENT_ELYTRA = registerFlag(new StringFlag("prevent-elytra", "")); // remove this flag later
 
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {

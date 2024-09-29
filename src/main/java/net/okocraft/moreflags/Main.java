@@ -1,5 +1,10 @@
 package net.okocraft.moreflags;
 
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.session.Session;
+import com.sk89q.worldguard.session.handler.Handler;
+import net.okocraft.moreflags.handler.ArmorCheckHandler;
+import net.okocraft.moreflags.listener.ArmorListener;
 import net.okocraft.moreflags.listener.BeaconEffectListener;
 import net.okocraft.moreflags.listener.BlockListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
@@ -34,6 +39,7 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
+        pm.registerEvents(new ArmorListener(), this);
         pm.registerEvents(new BeaconEffectListener(), this);
         pm.registerEvents(new DeathMessageListener(this), this);
         pm.registerEvents(new VehicleMoveListener(), this);
@@ -46,6 +52,13 @@ public class Main extends JavaPlugin {
         if (PlatformHelper.isFolia()) {
             pm.registerEvents(new EnderPearlListener(), this);
         }
+
+        WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(new Handler.Factory<>() {
+            @Override
+            public Handler create(Session session) {
+                return new ArmorCheckHandler(session);
+            }
+        }, null);
 
         if (protocolLibHook != null) {
             protocolLibHook.registerHandlers();
