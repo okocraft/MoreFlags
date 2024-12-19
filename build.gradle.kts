@@ -15,9 +15,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.12")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT")
 }
 
 tasks.compileJava {
