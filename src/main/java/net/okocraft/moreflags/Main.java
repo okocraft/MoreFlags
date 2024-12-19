@@ -7,6 +7,7 @@ import net.okocraft.moreflags.handler.ArmorCheckHandler;
 import net.okocraft.moreflags.listener.ArmorListener;
 import net.okocraft.moreflags.listener.BeaconEffectListener;
 import net.okocraft.moreflags.listener.BlockListener;
+import net.okocraft.moreflags.listener.CobwebPlaceListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.EggSpawnChickListener;
 import net.okocraft.moreflags.listener.EnderPearlListener;
@@ -48,6 +49,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new EggSpawnChickListener(), this);
         pm.registerEvents(new SignEditListener(), this);
         pm.registerEvents(new BlockListener(), this);
+        pm.registerEvents(new CobwebPlaceListener(), this);
 
         if (PlatformHelper.isFolia()) {
             pm.registerEvents(new EnderPearlListener(), this);

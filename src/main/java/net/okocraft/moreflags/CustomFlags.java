@@ -40,6 +40,7 @@ public final class CustomFlags {
     public static final StateFlag EGG_SPAWN_CHICK = registerFlag(createStateFlag("egg-spawn-chick", true));
 
     public static final StateFlag SIGN_EDIT = registerFlag(createStateFlag("sign-edit", false));
+    public static final StateFlag PLACE_COBWEB_ON_DEATH = registerFlag(createStateFlag("place-cobweb-on-death", true));
 
     public static final SetFlag<BlockType> BREAKABLE_BLOCKS = registerFlag(new SetFlag<>("breakable-blocks", new RegistryFlag<>(null, BlockType.REGISTRY)));
 
