@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.WindCharge;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 
@@ -37,6 +38,16 @@ public class ProjectileListener extends AbstractWorldGuardInternalListener {
             case WindCharge windCharge -> this.shouldCancel(windCharge, CustomFlags.WIND_CHARGE);
             default -> false;
         };
+
+        if (shouldCancel) {
+            event.setCancelled(true);
+            event.getEntity().remove();
+        }
+    }
+
+    @EventHandler
+    public void onExplode(EntityExplodeEvent event) {
+        boolean shouldCancel = event.getEntity() instanceof WindCharge windCharge && this.shouldCancel(windCharge, CustomFlags.WIND_CHARGE);
 
         if (shouldCancel) {
             event.setCancelled(true);
