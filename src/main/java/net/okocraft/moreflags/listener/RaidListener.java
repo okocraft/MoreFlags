@@ -26,7 +26,6 @@ import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.event.raid.RaidFinishEvent;
 import org.bukkit.event.raid.RaidSpawnWaveEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
@@ -37,16 +36,13 @@ import java.util.UUID;
 
 public class RaidListener implements Listener {
 
-    public static final String CANCEL_HERO_META_KEY = "cancel_hero";
     private static final NamespacedKey CAUSE_ID_KEY = new NamespacedKey("moreflags", "raid/cause_id");
 
     private final Main plugin;
-    private final FixedMetadataValue cancelHeroMeta;
     private final Advancement heroOfTheVillage;
 
     public RaidListener(Main plugin) {
         this.plugin = plugin;
-        this.cancelHeroMeta = new FixedMetadataValue(plugin, null);
         this.heroOfTheVillage = plugin.getServer()
                 .getAdvancement(NamespacedKey.minecraft("adventure/hero_of_the_village"));
     }
@@ -100,7 +96,6 @@ public class RaidListener implements Listener {
             return;
         }
 
-        event.getPlayer().setMetadata(CANCEL_HERO_META_KEY, cancelHeroMeta);
         event.setCancelled(true);
 
         Set<String> current = Set.copyOf(event.getPlayer().getAdvancementProgress(heroOfTheVillage).getAwardedCriteria());
@@ -116,8 +111,6 @@ public class RaidListener implements Listener {
                         awarded.forEach(ap::revokeCriteria);
                         plugin.getLogger().info("The completion of challenge has been cancelled.");
                     }
-
-                    player.removeMetadata(CANCEL_HERO_META_KEY, plugin);
                 },
                 1L
         );
