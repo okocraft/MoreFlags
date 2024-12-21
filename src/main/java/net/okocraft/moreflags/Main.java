@@ -10,13 +10,12 @@ import net.okocraft.moreflags.listener.BlockListener;
 import net.okocraft.moreflags.listener.CobwebPlaceListener;
 import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.EggSpawnChickListener;
-import net.okocraft.moreflags.listener.EnderPearlListener;
+import net.okocraft.moreflags.listener.ProjectileListener;
 import net.okocraft.moreflags.listener.RaidListener;
 import net.okocraft.moreflags.listener.SignEditListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
 import net.okocraft.moreflags.protocollib.ProtocolLibHook;
-import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -50,10 +49,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new SignEditListener(), this);
         pm.registerEvents(new BlockListener(), this);
         pm.registerEvents(new CobwebPlaceListener(), this);
-
-        if (PlatformHelper.isFolia()) {
-            pm.registerEvents(new EnderPearlListener(), this);
-        }
+        pm.registerEvents(new ProjectileListener(), this);
 
         WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(new Handler.Factory<>() {
             @Override
