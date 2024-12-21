@@ -25,29 +25,24 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.event.raid.RaidFinishEvent;
 import org.bukkit.event.raid.RaidSpawnWaveEvent;
-import org.bukkit.event.raid.RaidStopEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class RaidListener implements Listener {
 
     public static final String CANCEL_HERO_META_KEY = "cancel_hero";
+    private static final NamespacedKey CAUSE_ID_KEY = new NamespacedKey("moreflags", "raid/cause_id");
 
     private final Main plugin;
     private final FixedMetadataValue cancelHeroMeta;
     private final Advancement heroOfTheVillage;
-
-    private final Map<Integer, UUID> raidIdCauseMap = new HashMap<>();
 
     public RaidListener(Main plugin) {
         this.plugin = plugin;
@@ -61,7 +56,8 @@ public class RaidListener implements Listener {
         if (!canRaid(event.getRaid())) {
             event.setCancelled(true);
         } else {
-            raidIdCauseMap.put(getRaidId(event.getRaid()), event.getPlayer().getUniqueId());
+            UUID causeID = event.getPlayer().getUniqueId();
+            event.getRaid().getPersistentDataContainer().set(CAUSE_ID_KEY, PersistentDataType.LONG_ARRAY, new long[]{causeID.getMostSignificantBits(), causeID.getLeastSignificantBits()});
         }
     }
 
@@ -78,11 +74,6 @@ public class RaidListener implements Listener {
         if (!canRaid(event.getRaid())) {
             event.getWinners().forEach(p -> p.getPotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE));
         }
-    }
-
-    @EventHandler
-    private void onRaidStop(RaidStopEvent event) {
-        raidIdCauseMap.remove(getRaidId(event.getRaid()));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -144,11 +135,9 @@ public class RaidListener implements Listener {
         LocalPlayer subject;
         Location raidPos = raid.getLocation();
 
-        UUID causePlayerId = raidIdCauseMap.get(getRaidId(raid));
-        if (causePlayerId == null) {
-            subject = null;
-        } else {
-            Player causePlayer = plugin.getServer().getPlayer(causePlayerId);
+        long[] causeIdData = raid.getPersistentDataContainer().get(CAUSE_ID_KEY, PersistentDataType.LONG_ARRAY);
+        if (causeIdData != null && causeIdData.length  == 2) {
+            Player causePlayer = plugin.getServer().getPlayer(new UUID(causeIdData[0], causeIdData[1]));
 
             if (causePlayer != null) {
                 subject = WorldGuardPlugin.inst().wrapPlayer(causePlayer);
@@ -160,28 +149,9 @@ public class RaidListener implements Listener {
             } else {
                 subject = null;
             }
+        } else {
+            subject = null;
         }
-
         return FlagUtil.queryValue(raidPos.getWorld(), raidPos, subject, CustomFlags.RAID) == StateFlag.State.ALLOW;
-    }
-
-    private static Field HANDLE_FIELD;
-    private static Method GET_ID_METHOD;
-
-    private static int getRaidId(Raid raid) {
-        try {
-            if (HANDLE_FIELD == null) {
-                HANDLE_FIELD = raid.getClass().getDeclaredField("handle");
-                HANDLE_FIELD.setAccessible(true);
-            }
-            HANDLE_FIELD.setAccessible(true);
-            Object handle = HANDLE_FIELD.get(raid);
-            if (GET_ID_METHOD == null) {
-                GET_ID_METHOD = handle.getClass().getMethod("getId");
-            }
-            return (int) GET_ID_METHOD.invoke(handle);
-        } catch (ReflectiveOperationException e) {
-            return -1;
-        }
     }
 }
