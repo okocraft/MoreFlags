@@ -30,6 +30,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -120,6 +121,7 @@ public class RaidListener implements Listener {
     public static Raid getParticipatingRaid(Player player) {
         return player.getWorld().getRaids().stream()
                 .filter(r -> r.getHeroes().contains(player.getUniqueId()))
+                .sorted(Comparator.comparing(raid -> raid.getLocation().distanceSquared(player.getLocation())))
                 .findAny()
                 .orElse(null);
     }
