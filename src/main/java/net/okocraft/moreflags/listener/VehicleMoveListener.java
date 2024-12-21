@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.okocraft.moreflags.CustomFlags;
+import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,7 +54,8 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
     }
 
     private void onPlayerChangeBlockPoint(VehicleMoveEvent event, BlockVector3 to) {
-        var passengers = event.getVehicle().getPassengers();
+        var vehicle = event.getVehicle();
+        var passengers = vehicle.getPassengers();
         if (passengers.isEmpty() || !(passengers.get(0) instanceof Player player)) {
             return;
         }
@@ -61,18 +63,19 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
         if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
             return;
         }
+
         RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer()
-                .get(BukkitAdapter.adapt(event.getVehicle().getWorld()));
+                .get(BukkitAdapter.adapt(vehicle.getWorld()));
         if (rm == null) {
             return;
         }
 
         ApplicableRegionSet toRegionSet = rm.getApplicableRegions(to);
 
-        Set<ProtectedRegion> previousToRegions = toRegionsHistory.get(event.getVehicle().getUniqueId());
+        Set<ProtectedRegion> previousToRegions = toRegionsHistory.get(vehicle.getUniqueId());
         Set<ProtectedRegion> toRegions = new HashSet<>(toRegionSet.getRegions());
         if (previousToRegions == null || !previousToRegions.equals(toRegions)) {
-            toRegionsHistory.put(event.getVehicle().getUniqueId(), toRegions);
+            toRegionsHistory.put(vehicle.getUniqueId(), toRegions);
         }
         if (previousToRegions == null) {
             previousToRegions = new HashSet<>();
@@ -92,12 +95,12 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
 
         if (passengers.size() == 1) {
             passengerUuids = List.of(player.getUniqueId());
-            event.getVehicle().removePassenger(player);
+            vehicle.removePassenger(player);
         } else {
             passengerUuids = new ArrayList<>(passengers.size());
             for (var passenger : passengers) {
                 passengerUuids.add(passenger.getUniqueId());
-                event.getVehicle().removePassenger(passenger);
+                vehicle.removePassenger(passenger);
             }
         }
 
@@ -106,14 +109,14 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
 
         if (PlatformHelper.isFolia()) {
             // In Folia, Entity#teleport throws UnsupportedOperationException
-            event.getVehicle().teleportAsync(fromLoc);
+            vehicle.teleportAsync(fromLoc);
         } else {
-            event.getVehicle().teleport(fromLoc);
+            vehicle.teleport(fromLoc);
         }
 
-        PlatformHelper.runEntityTask(
-                event.getVehicle(),
-                vehicle -> {
+        vehicle.getScheduler().runDelayed(
+                Main.getPlugin(Main.class),
+                    ignored -> {
                     var teleportTo = fromLoc.multiply(2).subtract(toLoc);
 
                     if (PlatformHelper.isFolia()) {
@@ -132,8 +135,7 @@ public class VehicleMoveListener extends AbstractWorldGuardInternalListener {
 
                         vehicle.addPassenger(passenger);
                     }
-                },
-                player.getPing() / 25L + 1 // ping * 2 / 50 + 1 ticks
+                }, null, player.getPing() / 25L + 1 // ping * 2 / 50 + 1 ticks
         );
     }
 }

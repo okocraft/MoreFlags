@@ -9,7 +9,6 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.util.FlagUtil;
-import net.okocraft.moreflags.util.PlatformHelper;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Raid;
@@ -92,18 +91,19 @@ public class RaidListener implements Listener {
         if (event.getStatistic() != Statistic.RAID_WIN) {
             return;
         }
-        Raid raid = getParticipatingRaid(event.getPlayer());
+        Player player = event.getPlayer();
+        Raid raid = getParticipatingRaid(player);
         if (raid == null || canRaid(raid)) {
             return;
         }
 
         event.setCancelled(true);
 
-        Set<String> current = Set.copyOf(event.getPlayer().getAdvancementProgress(heroOfTheVillage).getAwardedCriteria());
+        Set<String> current = Set.copyOf(player.getAdvancementProgress(heroOfTheVillage).getAwardedCriteria());
 
-        PlatformHelper.runEntityTask(
-                event.getPlayer(),
-                player -> {
+        player.getScheduler().runDelayed(
+                this.plugin,
+                ignored -> {
                     AdvancementProgress ap = player.getAdvancementProgress(heroOfTheVillage);
                     Set<String> awarded = new HashSet<>(ap.getAwardedCriteria());
 
@@ -112,8 +112,7 @@ public class RaidListener implements Listener {
                         awarded.forEach(ap::revokeCriteria);
                         plugin.getLogger().info("The completion of challenge has been cancelled.");
                     }
-                },
-                1L
+                }, null, 1L
         );
     }
 
