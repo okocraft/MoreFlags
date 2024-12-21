@@ -1,7 +1,7 @@
 name: MoreFlags
 version: '1.0.0'
 main: net.okocraft.moreflags.Main
-api-version: 1.19
+api-version: 1.21
 depend: ["WorldGuard"]
 softdepend: ["ToggleDeathMessage"]
 folia-supported: true
