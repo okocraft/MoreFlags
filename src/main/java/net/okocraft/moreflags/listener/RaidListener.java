@@ -6,13 +6,6 @@ import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.util.FlagUtil;
@@ -37,6 +30,14 @@ import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class RaidListener implements Listener {
 
@@ -86,10 +87,10 @@ public class RaidListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onEntityPotionEffect(EntityPotionEffectEvent event) {
-        if (event.getCause() != EntityPotionEffectEvent.Cause.PATROL_CAPTAIN) {
-            return;
-        }
-        if (!(event.getEntity() instanceof Player player)) {
+        if (event.getCause() != EntityPotionEffectEvent.Cause.POTION_DRINK ||
+            event.getNewEffect() == null ||
+            event.getNewEffect().getType() != PotionEffectType.BAD_OMEN ||
+            !(event.getEntity() instanceof Player player)) {
             return;
         }
         Raid raid = getParticipatingRaid(player);
