@@ -21,7 +21,6 @@ dependencies {
         exclude("com.google.code.gson", "gson")
         exclude("it.unimi.dsi", "fastutil")
     }
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
 }
 
 tasks.compileJava {

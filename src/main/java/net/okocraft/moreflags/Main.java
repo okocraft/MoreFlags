@@ -15,21 +15,10 @@ import net.okocraft.moreflags.listener.RaidListener;
 import net.okocraft.moreflags.listener.SignEditListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
-import net.okocraft.moreflags.protocollib.ProtocolLibHook;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
-
-    private ProtocolLibHook protocolLibHook = null;
-
-    public Main() {
-        try {
-            this.protocolLibHook = new ProtocolLibHook(this);
-            getLogger().info("Using ProtocolLib.");
-        } catch (NoClassDefFoundError ignored) {
-        }
-    }
 
     @Override
     public void onLoad() {
@@ -57,20 +46,5 @@ public class Main extends JavaPlugin {
                 return new ArmorCheckHandler(session);
             }
         }, null);
-
-        if (protocolLibHook != null) {
-            protocolLibHook.registerHandlers();
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        if (protocolLibHook != null) {
-            protocolLibHook.unregisterHandlers();
-        }
-    }
-
-    public boolean hasProtocolLib() {
-        return this.protocolLibHook != null;
     }
 }
