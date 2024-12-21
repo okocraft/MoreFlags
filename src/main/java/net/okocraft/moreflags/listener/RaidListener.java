@@ -74,9 +74,8 @@ public class RaidListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onEntityPotionEffect(EntityPotionEffectEvent event) {
-        if (event.getCause() != EntityPotionEffectEvent.Cause.POTION_DRINK ||
-            event.getNewEffect() == null ||
-            event.getNewEffect().getType() != PotionEffectType.BAD_OMEN ||
+        if (event.getNewEffect() == null ||
+            event.getNewEffect().getType() != PotionEffectType.RAID_OMEN ||
             !(event.getEntity() instanceof Player player)) {
             return;
         }
