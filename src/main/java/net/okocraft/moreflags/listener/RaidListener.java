@@ -79,8 +79,10 @@ public class RaidListener implements Listener {
             !(event.getEntity() instanceof Player player)) {
             return;
         }
-        Raid raid = getParticipatingRaid(player);
-        if (raid != null && !canRaid(raid)) {
+        World weWorld = BukkitAdapter.adapt(player.getWorld());
+        LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+        if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(localPlayer, weWorld) &&
+            FlagUtil.queryValue(player.getWorld(), player.getLocation(), localPlayer, CustomFlags.RAID) == StateFlag.State.DENY) {
             event.setCancelled(true);
         }
     }
@@ -129,7 +131,7 @@ public class RaidListener implements Listener {
         Location raidPos = raid.getLocation();
 
         long[] causeIdData = raid.getPersistentDataContainer().get(CAUSE_ID_KEY, PersistentDataType.LONG_ARRAY);
-        if (causeIdData != null && causeIdData.length  == 2) {
+        if (causeIdData != null && causeIdData.length == 2) {
             Player causePlayer = plugin.getServer().getPlayer(new UUID(causeIdData[0], causeIdData[1]));
 
             if (causePlayer != null) {
