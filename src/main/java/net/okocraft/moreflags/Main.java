@@ -12,7 +12,6 @@ import net.okocraft.moreflags.listener.DeathMessageListener;
 import net.okocraft.moreflags.listener.EggSpawnChickListener;
 import net.okocraft.moreflags.listener.ProjectileListener;
 import net.okocraft.moreflags.listener.RaidListener;
-import net.okocraft.moreflags.listener.SignEditListener;
 import net.okocraft.moreflags.listener.VehicleMoveListener;
 import net.okocraft.moreflags.listener.WorldGuardInternalListener;
 import org.bukkit.plugin.PluginManager;
@@ -35,7 +34,6 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new WorldGuardInternalListener(), this);
         pm.registerEvents(new RaidListener(this), this);
         pm.registerEvents(new EggSpawnChickListener(), this);
-        pm.registerEvents(new SignEditListener(), this);
         pm.registerEvents(new BlockListener(), this);
         pm.registerEvents(new CobwebPlaceListener(), this);
         pm.registerEvents(new ProjectileListener(), this);

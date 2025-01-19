@@ -7,8 +7,10 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.event.DelegateEvent;
 import com.sk89q.worldguard.bukkit.event.block.BreakBlockEvent;
 import com.sk89q.worldguard.bukkit.event.block.PlaceBlockEvent;
+import com.sk89q.worldguard.bukkit.event.block.UseBlockEvent;
 import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.util.FlagUtil;
 import org.bukkit.block.Block;
@@ -20,6 +22,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -28,9 +31,15 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBreakLow(@NotNull BreakBlockEvent event) {
-        if (!(event.getOriginalEvent() instanceof BlockBreakEvent breakEvent) ||
-            !getConfig().get(breakEvent.getBlock().getWorld().getName()).useRegions) {
+        if (!getConfig().get(event.getWorld().getName()).useRegions) {
             return;
+        }
+
+        switch (event.getOriginalEvent()) {
+            case BlockBreakEvent ignored -> {}
+            case null, default -> {
+                return;
+            }
         }
 
         event.setSilent(true); // To prevent sending message from RegionProtectionListener
@@ -38,19 +47,18 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBreakHigh(@NotNull BreakBlockEvent event) {
-        if (!(event.getOriginalEvent() instanceof BlockBreakEvent breakEvent) ||
-            !getConfig().get(breakEvent.getBlock().getWorld().getName()).useRegions) {
+        if (!getConfig().get(event.getWorld().getName()).useRegions) {
             return;
         }
 
-        processEvent(
-                breakEvent.getPlayer(),
-                breakEvent.getBlock(),
-                CustomFlags.BREAKABLE_BLOCKS,
-                event,
-                event.getBlocks(),
-                "worldguard.error.denied.what.break-that-block"
-        );
+        switch (event.getOriginalEvent()) {
+            case BlockBreakEvent breakEvent -> processEvent(
+                    breakEvent.getPlayer(), breakEvent.getBlock(), CustomFlags.BREAKABLE_BLOCKS,
+                    event, event.getBlocks(), "worldguard.error.denied.what.break-that-block"
+            );
+            case null, default -> {
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -71,6 +79,7 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
                     return;
                 }
             }
+            case SignChangeEvent ignored -> {}
             case null, default -> {
                 return;
             }
@@ -93,12 +102,8 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
                 }
 
                 processEvent(
-                        placeEvent.getPlayer(),
-                        placeEvent.getBlock(),
-                        CustomFlags.PLACEABLE_BLOCKS,
-                        event,
-                        event.getBlocks(),
-                        "worldguard.error.denied.what.place-that-block"
+                        placeEvent.getPlayer(), placeEvent.getBlock(), CustomFlags.PLACEABLE_BLOCKS,
+                        event, event.getBlocks(), "worldguard.error.denied.what.place-that-block"
                 );
             }
             case BlockFertilizeEvent fertilizeEvent -> {
@@ -106,15 +111,47 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
                     return;
                 }
                 processEvent(
-                        fertilizeEvent.getPlayer(),
-                        fertilizeEvent.getBlock(),
-                        CustomFlags.FERTILIZE,
-                        event,
-                        event.getBlocks(),
-                        "worldguard.error.denied.what.use-that"
+                        fertilizeEvent.getPlayer(), fertilizeEvent.getBlock(), CustomFlags.FERTILIZE,
+                        event, event.getBlocks(), "worldguard.error.denied.what.use-that"
                 );
             }
+            case SignChangeEvent signChangeEvent -> processEvent(
+                    signChangeEvent.getPlayer(), signChangeEvent.getBlock(), CustomFlags.SIGN_EDIT,
+                    event, event.getBlocks(), "worldguard.error.denied.what.place-that-block"
+            );
             case null, default -> {}
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onUseLow(@NotNull UseBlockEvent event) {
+        if (!getConfig().get(event.getWorld().getName()).useRegions) {
+            return;
+        }
+
+        switch (event.getOriginalEvent()) {
+            case PlayerOpenSignEvent ignored -> {}
+            case null, default -> {
+                return;
+            }
+        }
+
+        event.setSilent(true); // To prevent sending message from RegionProtectionListener
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onUseHigh(@NotNull UseBlockEvent event) {
+        if (!getConfig().get(event.getWorld().getName()).useRegions) {
+            return;
+        }
+
+        switch (event.getOriginalEvent()) {
+            case PlayerOpenSignEvent openSignEvent -> processEvent(
+                    openSignEvent.getPlayer(), openSignEvent.getSign().getBlock(), CustomFlags.SIGN_EDIT,
+                    event, event.getBlocks(), "worldguard.error.denied.what.open-that"
+            );
+            case null, default -> {
+            }
         }
     }
 
