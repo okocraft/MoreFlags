@@ -13,6 +13,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.util.FlagUtil;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -23,9 +24,12 @@ import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BlockListener extends AbstractWorldGuardInternalListener {
 
@@ -36,7 +40,8 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
         }
 
         switch (event.getOriginalEvent()) {
-            case BlockBreakEvent ignored -> {}
+            case BlockBreakEvent ignored -> {
+            }
             case null, default -> {
                 return;
             }
@@ -78,8 +83,18 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
                 if (fertilizeEvent.getPlayer() == null) {
                     return;
                 }
+                checkFertilizeFlag(fertilizeEvent.getPlayer(), fertilizeEvent.getBlock(), event::setResult);
             }
-            case SignChangeEvent ignored -> {}
+            case PlayerInteractEvent interactEvent -> { // for fertilize flag
+                Block block = interactEvent.getClickedBlock();
+                ItemStack item = interactEvent.getItem();
+                if (block == null || item == null || item.getType() != Material.BONE_MEAL) {
+                    return;
+                }
+                checkFertilizeFlag(interactEvent.getPlayer(), block, event::setResult);
+            }
+            case SignChangeEvent ignored -> {
+            }
             case null, default -> {
                 return;
             }
@@ -106,31 +121,32 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
                         event, event.getBlocks(), "worldguard.error.denied.what.place-that-block"
                 );
             }
-            case BlockFertilizeEvent fertilizeEvent -> {
-                if (fertilizeEvent.getPlayer() == null) {
-                    return;
-                }
-                processEvent(
-                        fertilizeEvent.getPlayer(), fertilizeEvent.getBlock(), CustomFlags.FERTILIZE,
-                        event, event.getBlocks(), "worldguard.error.denied.what.use-that"
-                );
-            }
             case SignChangeEvent signChangeEvent -> processEvent(
                     signChangeEvent.getPlayer(), signChangeEvent.getBlock(), CustomFlags.SIGN_EDIT,
                     event, event.getBlocks(), "worldguard.error.denied.what.place-that-block"
             );
-            case null, default -> {}
+            case null, default -> {
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.LOW)
-    public void onUseLow(@NotNull UseBlockEvent event) {
+    public void onUseBlockLow(@NotNull UseBlockEvent event) {
         if (!getConfig().get(event.getWorld().getName()).useRegions) {
             return;
         }
 
         switch (event.getOriginalEvent()) {
-            case PlayerOpenSignEvent ignored -> {}
+            case PlayerOpenSignEvent ignored -> {
+            }
+            case PlayerInteractEvent interactEvent -> { // for fertilize flag
+                Block block = interactEvent.getClickedBlock();
+                ItemStack item = interactEvent.getItem();
+                if (block == null || item == null || item.getType() != Material.BONE_MEAL || !interactEvent.getAction().isRightClick()) {
+                    return;
+                }
+                checkFertilizeFlag(interactEvent.getPlayer(), block, event::setResult);
+            }
             case null, default -> {
                 return;
             }
@@ -140,7 +156,7 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void onUseHigh(@NotNull UseBlockEvent event) {
+    public void onUseBlockHigh(@NotNull UseBlockEvent event) {
         if (!getConfig().get(event.getWorld().getName()).useRegions) {
             return;
         }
@@ -202,14 +218,18 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
         var state = FlagUtil.queryValue(block.getWorld(), block.getLocation(), localPlayer, flag);
 
         if (state != null) {
-            if (weEvent.getResult() == Event.Result.DENY && state == StateFlag.State.ALLOW) {
+            if (state == StateFlag.State.ALLOW) {
                 // Other flags cancel the event, but the given flag allows it.
                 weEvent.setResult(Event.Result.ALLOW);
-                eventBlocks.add(block); // Re-add a block
-            } else if (weEvent.getResult() != Event.Result.DENY && state == StateFlag.State.DENY) {
+                if (weEvent.getResult() == Event.Result.DENY) {
+                    eventBlocks.add(block); // Re-add a block
+                }
+            } else if (state == StateFlag.State.DENY) {
                 // Other flags allow the event, but the given flag disallows it.
                 weEvent.setResult(Event.Result.DENY);
-                eventBlocks.remove(block); // Remove a block
+                if (weEvent.getResult() != Event.Result.DENY) {
+                    eventBlocks.remove(block); // Remove a block
+                }
             }
         } /* else {
           // The given flag is not set, so we follow other flags such as "build" flag.
@@ -219,6 +239,22 @@ public class BlockListener extends AbstractWorldGuardInternalListener {
 
         if (weEvent.getResult() == Event.Result.DENY) {
             tellErrorMessage(bukkitPlayer, block.getLocation(), TranslatableComponent.of(denyMessageKey));
+        }
+    }
+
+    private static void checkFertilizeFlag(@NotNull Player bukkitPlayer, @NotNull Block block, @NotNull Consumer<Event.Result> setResult) {
+        var localPlayer = getPlugin().wrapPlayer(bukkitPlayer);
+        if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(localPlayer, localPlayer.getWorld())) {
+            return;
+        }
+
+        var state = FlagUtil.queryValue(block.getWorld(), block.getLocation(), localPlayer, CustomFlags.FERTILIZE);
+
+        if (state == StateFlag.State.ALLOW) {
+            setResult.accept(Event.Result.ALLOW);
+        } else if (state == StateFlag.State.DENY) {
+            setResult.accept(Event.Result.DENY);
+            tellErrorMessage(bukkitPlayer, block.getLocation(), TranslatableComponent.of("worldguard.error.denied.what.use-that"));
         }
     }
 }
