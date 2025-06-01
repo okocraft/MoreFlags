@@ -39,7 +39,7 @@ public final class CustomFlags {
 
     public static final StateFlag EGG_SPAWN_CHICK = registerFlag(createStateFlag("egg-spawn-chick", true));
 
-    public static final StateFlag FERTILIZE = registerFlag(createStateFlag("fertilize", true));
+    public static final StateFlag FERTILIZE = registerFlag(createStateFlag("fertilize", false));
     public static final StateFlag SIGN_EDIT = registerFlag(createStateFlag("sign-edit", false));
     public static final StateFlag PLACE_COBWEB_ON_DEATH = registerFlag(createStateFlag("place-cobweb-on-death", true));
     public static final StateFlag WIND_CHARGE = registerFlag(createStateFlag("wind-charge", true));
