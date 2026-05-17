@@ -2,7 +2,7 @@ plugins {
     java
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 
 group = "net.okocraft.moreflags"
 version = "1.0.0"
@@ -23,7 +23,7 @@ dependencies {
 }
 
 tasks.compileJava {
-    options.release.set(21)
+    options.release.set(25)
 }
 
 tasks.processResources {
