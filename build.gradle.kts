@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.63-stable")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.16") {
         exclude("com.google.guava", "guava")
         exclude("com.google.code.gson", "gson")
