@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class ArmorCheckHandler extends Handler {
@@ -102,18 +103,14 @@ public class ArmorCheckHandler extends Handler {
 
         ItemStack item;
 
-        if (newItem != null) {
-            item = newItem;
-        } else {
-            item = switch (slot) {
-                case HEAD -> bukkitPlayer.getPlayer().getInventory().getHelmet();
-                case CHEST -> bukkitPlayer.getPlayer().getInventory().getChestplate();
-                case FEET -> bukkitPlayer.getPlayer().getInventory().getLeggings();
-                case LEGS -> bukkitPlayer.getPlayer().getInventory().getBoots();
-            };
-        }
+        item = Objects.requireNonNullElseGet(newItem, () -> switch (slot) {
+            case HEAD -> bukkitPlayer.getPlayer().getInventory().getHelmet();
+            case CHEST -> bukkitPlayer.getPlayer().getInventory().getChestplate();
+            case FEET -> bukkitPlayer.getPlayer().getInventory().getLeggings();
+            case LEGS -> bukkitPlayer.getPlayer().getInventory().getBoots();
+        });
 
-        if (item != null && !item.isEmpty() && blacklistedItems.contains(BukkitAdapter.adapt(item).getType())) {
+        if (!item.isEmpty() && blacklistedItems.contains(BukkitAdapter.adapt(item).getType())) {
             return new PlayerArmorDeniedEvent(bukkitPlayer.getPlayer(), slot, item);
         }
 
