@@ -1,25 +1,25 @@
 package net.okocraft.moreflags.event;
 
-import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerArmorDeniedEvent extends PlayerEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
-    private final PlayerArmorChangeEvent.SlotType slot;
+    private final EquipmentSlot slot;
     private final ItemStack item;
 
-    public PlayerArmorDeniedEvent(@NotNull Player who, @NotNull PlayerArmorChangeEvent.SlotType slot, @NotNull ItemStack item) {
+    public PlayerArmorDeniedEvent(@NotNull Player who, @NotNull EquipmentSlot slot, @NotNull ItemStack item) {
         super(who);
         this.slot = slot;
         this.item = item;
     }
 
-    public @NotNull PlayerArmorChangeEvent.SlotType getSlot() {
+    public @NotNull EquipmentSlot getSlot() {
         return this.slot;
     }
 

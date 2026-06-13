@@ -1,13 +1,14 @@
 package net.okocraft.moreflags.handler;
 
-import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.util.Location;
+import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.BukkitPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
@@ -15,6 +16,7 @@ import com.sk89q.worldguard.session.handler.Handler;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.event.PlayerArmorDeniedEvent;
 import net.okocraft.moreflags.util.FlagUtil;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,7 +75,7 @@ public class ArmorCheckHandler extends Handler {
     }
 
     public static @Nullable PlayerArmorDeniedEvent checkArmors(@NotNull LocalPlayer player) {
-        for (var slot : PlayerArmorChangeEvent.SlotType.values()) {
+        for (var slot : EquipmentSlot.values()) {
             var blacklisted = checkArmor(player, slot, null);
             if (blacklisted != null) {
                 return blacklisted;
@@ -83,20 +85,23 @@ public class ArmorCheckHandler extends Handler {
         return null;
     }
 
-    public static @Nullable PlayerArmorDeniedEvent checkArmor(@NotNull LocalPlayer player, @NotNull PlayerArmorChangeEvent.SlotType slot, @Nullable ItemStack newItem) {
+    public static @Nullable PlayerArmorDeniedEvent checkArmor(@NotNull LocalPlayer player, @NotNull EquipmentSlot slot, @Nullable ItemStack newItem) {
         if (!(player instanceof BukkitPlayer bukkitPlayer)) {
             return null;
         }
 
-        var flag = switch (slot) {
-            case HEAD -> CustomFlags.ARMOR_BLACKLIST_HEAD;
-            case CHEST -> CustomFlags.ARMOR_BLACKLIST_CHEST;
-            case LEGS -> CustomFlags.ARMOR_BLACKLIST_LEGS;
-            case FEET -> CustomFlags.ARMOR_BLACKLIST_FEET;
-        };
+        SetFlag<ItemType> flag;
+        switch (slot) {
+            case HEAD -> flag = CustomFlags.ARMOR_BLACKLIST_HEAD;
+            case CHEST -> flag = CustomFlags.ARMOR_BLACKLIST_CHEST;
+            case LEGS -> flag = CustomFlags.ARMOR_BLACKLIST_LEGS;
+            case FEET -> flag = CustomFlags.ARMOR_BLACKLIST_FEET;
+            default -> {
+                return null;
+            }
+        }
 
-        var blacklistedItems = FlagUtil.queryValueForPlayer(player, flag);
-
+        Set<ItemType> blacklistedItems = FlagUtil.queryValueForPlayer(player, flag);
         if (blacklistedItems == null) {
             return null;
         }
@@ -108,6 +113,7 @@ public class ArmorCheckHandler extends Handler {
             case CHEST -> bukkitPlayer.getPlayer().getInventory().getChestplate();
             case FEET -> bukkitPlayer.getPlayer().getInventory().getLeggings();
             case LEGS -> bukkitPlayer.getPlayer().getInventory().getBoots();
+            default -> throw new AssertionError("Unexpected equipment slot: " + slot);
         });
 
         if (!item.isEmpty() && blacklistedItems.contains(BukkitAdapter.adapt(item).getType())) {

@@ -34,7 +34,7 @@ public class ArmorListener extends WorldGuardInternalListener {
             return;
         }
 
-        var deniedEvent = ArmorCheckHandler.checkArmor(localPlayer, event.getSlotType(), event.getNewItem());
+        var deniedEvent = ArmorCheckHandler.checkArmor(localPlayer, event.getSlot(), event.getNewItem());
         if (deniedEvent != null) {
             deniedEvent.callEvent();
         }
