@@ -56,9 +56,6 @@ public final class CustomFlags {
     public static final StringFlag MESSAGE_ON_ARMOR_DENIED = registerFlag(new StringFlag("message-on-armor-denied", ""));
     public static final StringFlag TELEPORT_ON_ARMOR_DENIED = registerFlag(new StringFlag("teleport-on-armor-denied", ""));
 
-    @Deprecated
-    public static final StringFlag PREVENT_ELYTRA = registerFlag(new StringFlag("prevent-elytra", "")); // remove this flag later
-
     @SuppressWarnings("unchecked")
     private static <F extends Flag<?>, C extends F> F registerFlag(C flag) {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
@@ -82,10 +79,6 @@ public final class CustomFlags {
 
     private static StateFlag createStateFlag(String name, boolean def) {
         return new StateFlag(name, def);
-    }
-
-    private static StateFlag createStateFlag(String name, boolean def, RegionGroup group) {
-        return new StateFlag(name, def, group);
     }
 
     private static StateFlag createStateFlag(String name, boolean def, RegionGroup group, boolean membershipsAsDefault) {
