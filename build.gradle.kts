@@ -1,29 +1,34 @@
 plugins {
-    java
+    alias(libs.plugins.jcommon)
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+jcommon {
+    javaVersion = JavaVersion.VERSION_25
+
+    setupPaperRepository()
+    setupJUnit(libs.junit.bom)
+    setupMockito(libs.mockito)
+
+    commonDependencies {
+        compileOnly(libs.platform.paper)
+        compileOnly(libs.worldguard.bukkit) {
+            exclude("com.google.guava", "guava")
+            exclude("com.google.code.gson", "gson")
+            exclude("it.unimi.dsi", "fastutil")
+        }
+
+        testImplementation(libs.junit.jupiter)
+        testImplementation(libs.platform.paper)
+        testImplementation(libs.worldguard.bukkit)
+    }
+}
 
 group = "net.okocraft.moreflags"
 version = "1.0.0"
 
 repositories {
     mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
-}
-
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.18") {
-        exclude("com.google.guava", "guava")
-        exclude("com.google.code.gson", "gson")
-        exclude("it.unimi.dsi", "fastutil")
-    }
-}
-
-tasks.compileJava {
-    options.release.set(25)
 }
 
 tasks.processResources {
