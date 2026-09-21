@@ -21,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Set;
 
 public class ArmorCheckHandler extends Handler {
@@ -106,17 +105,9 @@ public class ArmorCheckHandler extends Handler {
             return null;
         }
 
-        ItemStack item;
+        ItemStack item = newItem != null ? newItem : bukkitPlayer.getPlayer().getInventory().getItem(slot);
 
-        item = Objects.requireNonNullElseGet(newItem, () -> switch (slot) {
-            case HEAD -> bukkitPlayer.getPlayer().getInventory().getHelmet();
-            case CHEST -> bukkitPlayer.getPlayer().getInventory().getChestplate();
-            case FEET -> bukkitPlayer.getPlayer().getInventory().getLeggings();
-            case LEGS -> bukkitPlayer.getPlayer().getInventory().getBoots();
-            default -> throw new AssertionError("Unexpected equipment slot: " + slot);
-        });
-
-        if (!item.isEmpty() && blacklistedItems.contains(BukkitAdapter.adapt(item).getType())) {
+        if (item != null && !item.isEmpty() && blacklistedItems.contains(BukkitAdapter.adapt(item).getType())) {
             return new PlayerArmorDeniedEvent(bukkitPlayer.getPlayer(), slot, item);
         }
 
