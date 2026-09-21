@@ -19,7 +19,11 @@ jcommon {
 
         testImplementation(libs.junit.jupiter)
         testImplementation(libs.platform.paper)
-        testImplementation(libs.worldguard.bukkit)
+        testImplementation(libs.worldguard.bukkit) {
+            exclude("com.google.guava", "guava")
+            exclude("com.google.code.gson", "gson")
+            exclude("it.unimi.dsi", "fastutil")
+        }
     }
 }
 
