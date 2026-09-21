@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Set;
 
 public class ArmorCheckHandler extends Handler {
@@ -74,7 +75,12 @@ public class ArmorCheckHandler extends Handler {
     }
 
     public static @Nullable PlayerArmorDeniedEvent checkArmors(@NotNull LocalPlayer player) {
-        for (var slot : EquipmentSlot.values()) {
+        for (var slot : List.of(
+                EquipmentSlot.HEAD,
+                EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS,
+                EquipmentSlot.FEET
+        )) {
             var blacklisted = checkArmor(player, slot, null);
             if (blacklisted != null) {
                 return blacklisted;
