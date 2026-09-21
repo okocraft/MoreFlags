@@ -14,7 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.util.FlagUtil;
-import org.bukkit.GameRule;
+import org.bukkit.GameRules;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -47,8 +47,8 @@ public class DeathMessageListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void putMetaOnPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getPlayer();
-        Boolean showDeathMessage = player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES);
-        if (showDeathMessage == null || !showDeathMessage || event.getDeathMessage() == null) {
+        Boolean showDeathMessage = player.getWorld().getGameRuleValue(GameRules.SHOW_DEATH_MESSAGES);
+        if (!showDeathMessage || event.getDeathMessage() == null) {
             return;
         }
 
