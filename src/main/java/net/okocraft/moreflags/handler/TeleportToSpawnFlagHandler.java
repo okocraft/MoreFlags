@@ -3,6 +3,7 @@ package net.okocraft.moreflags.handler;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.session.MoveType;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class TeleportToSpawnFlagHandler extends Handler {
@@ -29,6 +31,13 @@ public class TeleportToSpawnFlagHandler extends Handler {
     public boolean onCrossBoundary(LocalPlayer player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
         String flagValue = toSet.queryValue(player, CustomFlags.TELEPORT_TO_SPAWN_ON_ENTRY);
         if (flagValue == null) {
+            return true;
+        }
+
+        String previousFlagValue = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .createQuery().getApplicableRegions(from)
+                .queryValue(player, CustomFlags.TELEPORT_TO_SPAWN_ON_ENTRY);
+        if (Objects.equals(flagValue, previousFlagValue)) {
             return true;
         }
 
