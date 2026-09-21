@@ -9,6 +9,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.handler.Handler;
+import net.kyori.adventure.key.InvalidKeyException;
 import net.kyori.adventure.key.Key;
 import net.okocraft.moreflags.CustomFlags;
 import net.okocraft.moreflags.Main;
@@ -56,7 +57,7 @@ public class TeleportToSpawnFlagHandler extends Handler {
         Key key;
         try {
             key = Key.key(worldKey);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidKeyException e) {
             return null;
         }
 
