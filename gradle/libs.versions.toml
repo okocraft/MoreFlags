@@ -1,5 +1,5 @@
 [versions]
-paper = "26.2.build.123-stable"
+paper = "26.2.build.124-stable"
 worldguard = "7.0.18"
 
 junit = "6.1.3"
