@@ -158,14 +158,18 @@ public class DeathMessageListener implements Listener {
         if (team != null) {
             Team.OptionStatus deathMessageOption = team.getOption(Team.Option.DEATH_MESSAGE_VISIBILITY);
             switch (deathMessageOption) {
+                case NEVER:
+                    // Hide for everyone
+                    onlinePlayers.clear();
+                    break;
                 case FOR_OTHER_TEAMS:
-                    // Hide for other teams or victim
+                    // Hide for other teams: only teammates (excluding the victim) can see it, as in vanilla.
                     onlinePlayers.removeIf(onlinePlayer -> onlinePlayer.equals(player)
-                            || team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
+                            || !team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
                     break;
                 case FOR_OWN_TEAM:
-                    // Hide for own team
-                    onlinePlayers.removeIf(onlinePlayer -> !team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
+                    // Hide for own team: only players outside the victim's team can see it, as in vanilla.
+                    onlinePlayers.removeIf(onlinePlayer -> team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
                     break;
                 case ALWAYS:
                 default:
