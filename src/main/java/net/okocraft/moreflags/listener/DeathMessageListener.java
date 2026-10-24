@@ -119,7 +119,7 @@ public class DeathMessageListener implements Listener {
 
             LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
             if (WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(lp, lp.getWorld())) {
-                p.removeMetadata(METADATA_KEY, plugin);
+                p.removeMetadata(METADATA_KEY, noSeeMeta.getOwningPlugin());
             }
         }
     }
