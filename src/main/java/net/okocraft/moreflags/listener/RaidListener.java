@@ -68,7 +68,7 @@ public class RaidListener implements Listener {
     @EventHandler
     private void onRaidFinish(RaidFinishEvent event) {
         if (!canRaid(event.getRaid())) {
-            event.getWinners().forEach(p -> p.getPotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE));
+            event.getWinners().forEach(p -> p.removePotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE));
         }
     }
 

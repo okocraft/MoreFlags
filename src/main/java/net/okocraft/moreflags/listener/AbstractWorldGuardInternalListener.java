@@ -46,6 +46,7 @@ import com.sk89q.worldguard.domains.Association;
 import com.sk89q.worldguard.protection.association.Associables;
 import com.sk89q.worldguard.protection.association.DelayedRegionOverlapAssociation;
 import com.sk89q.worldguard.protection.association.RegionAssociable;
+import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
@@ -189,12 +190,12 @@ class AbstractWorldGuardInternalListener implements Listener {
         if (lastTime == null || now - lastTime >= LAST_MESSAGE_DELAY) {
             RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
             LocalPlayer localPlayer = getPlugin().wrapPlayer(player);
-            Component message = (Component) query.queryValue(
-                    BukkitAdapter.adapt(location),
-                    localPlayer,
-                    Flags.fuzzyMatchFlag(WorldGuard.getInstance().getFlagRegistry(), "deny-message-component")
-            );
-            formatAndSendDenyMessage(what, localPlayer, message);
+            // "deny-message-component" only exists in forked WorldGuard; upstream does not have it.
+            Flag<?> denyMessageFlag = Flags.fuzzyMatchFlag(WorldGuard.getInstance().getFlagRegistry(), "deny-message-component");
+            if (denyMessageFlag != null) {
+                Component message = (Component) query.queryValue(BukkitAdapter.adapt(location), localPlayer, denyMessageFlag);
+                formatAndSendDenyMessage(what, localPlayer, message);
+            }
             WGMetadata.put(player, DENY_MESSAGE_KEY, now);
         }
     }
