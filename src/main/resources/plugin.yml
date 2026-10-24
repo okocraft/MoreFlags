@@ -1,5 +1,5 @@
 name: MoreFlags
-version: '1.0.0'
+version: '${projectVersion}'
 main: net.okocraft.moreflags.Main
 api-version: 1.21
 depend: ["WorldGuard"]

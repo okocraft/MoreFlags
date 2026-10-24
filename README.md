@@ -4,7 +4,7 @@ Okocraft独自の様々なWorldGuardフラグを追加するプラグイン。Wo
 OkocraftがハードフォークしたWorldGuardに依存する。
 
 ## 導入
-バージョン 1.19 以上のSpigotまたはPaperサーバーを用意する。それより古いminecraftバージョンでも動くかもしれないが保証しない。
+Java 25 で動作するPaperまたはFolia（`plugin.yml` の `api-version` は 1.21）サーバーを用意する。Spigotには対応していない。
 
 1. Okocraft版のWorldGuardをビルドしてインストールする。
 2. 本プラグインをビルドしてインストールする。
