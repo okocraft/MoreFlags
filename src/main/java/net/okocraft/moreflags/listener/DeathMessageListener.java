@@ -125,13 +125,9 @@ public class DeathMessageListener implements Listener {
     }
 
     /**
-     * Filters player death message without protocollib.<br>
-     * This method will have some internal side effects since it removes original death message and resend it.<br>
-     * For example:
-     * <ul>
-     * <li>Death reason displayed on death screen will disappear</li>
-     * <li>Break plugins hiding or modifying death messages with same way.</li>
-     * </ul>
+     * Filters player death message.<br>
+     * This method removes the original death message and resends it, so it may break plugins hiding or modifying death messages with same way.<br>
+     * The death reason displayed on the death screen is kept by {@link PlayerDeathEvent#deathScreenMessageOverride(Component)}.
      *
      * @param event player death event.
      */
@@ -183,7 +179,11 @@ public class DeathMessageListener implements Listener {
             if (deathMessage == null) {
                 return;
             }
+            if (event.deathScreenMessageOverride() == null) {
+                event.deathScreenMessageOverride(deathMessage);
+            }
             event.deathMessage(null);
+            plugin.getServer().getConsoleSender().sendMessage(deathMessage);
             for (Player onlinePlayer : onlinePlayers) {
                 onlinePlayer.sendMessage(deathMessage);
             }
