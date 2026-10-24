@@ -14,9 +14,11 @@ import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.handler.Handler;
 import net.okocraft.moreflags.CustomFlags;
+import net.okocraft.moreflags.Main;
 import net.okocraft.moreflags.event.PlayerArmorDeniedEvent;
 import net.okocraft.moreflags.util.FlagUtil;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,10 +35,14 @@ public class ArmorCheckHandler extends Handler {
     @Override
     public boolean onCrossBoundary(LocalPlayer player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
         if (shouldCheckArmors(player, toSet)) {
-            var deniedEvent = checkArmors(player);
-            if (deniedEvent != null) {
-                deniedEvent.callEvent();
-            }
+            // The player is still at the old location while this handler runs, so check one tick later (after the move/teleport).
+            var bukkitPlayer = BukkitAdapter.adapt(player);
+            bukkitPlayer.getScheduler().run(JavaPlugin.getPlugin(Main.class), _ -> {
+                var deniedEvent = checkArmors(player);
+                if (deniedEvent != null) {
+                    deniedEvent.callEvent();
+                }
+            }, null);
         }
         return true;
     }
